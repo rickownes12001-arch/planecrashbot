@@ -59,19 +59,33 @@ body {
     text-align: center;
 }
 
-.menu-tabs {
+.menu-content {
     display: flex;
-    justify-content: center;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.menu-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+}
+
+.menu-tabs-vertical {
+    display: flex;
+    flex-direction: column;
     gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
+}
+
+.menu-main {
+    flex: 1;
+    min-height: 400px;
 }
 
 .tab-btn {
     background: linear-gradient(135deg, rgba(100, 150, 255, 0.2), rgba(150, 100, 255, 0.2));
     border: 1px solid rgba(100, 150, 255, 0.3);
     color: #ffffff;
-    padding: 12px 20px;
+    padding: 12px 15px;
     border-radius: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -79,6 +93,8 @@ body {
     font-weight: 600;
     position: relative;
     overflow: hidden;
+    width: 100%;
+    text-align: left;
 }
 
 .tab-btn::before {
