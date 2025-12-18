@@ -2,39 +2,31 @@
 
 Этот проект содержит Telegram бота, который открывает веб-приложение с игрой PlaneXcra$h.
 
-## Настройка
+## Быстрая настройка с Vercel (бесплатный хостинг)
 
-1. Установите Python 3.8+.
+1. Зарегистрируйтесь на https://vercel.com (используйте GitHub аккаунт).
 
-2. Установите зависимости:
-   ```
-   pip install -r requirements.txt
-   ```
+2. Импортируйте репозиторий: Dashboard > Import Project > From Git Repository > Вставьте URL вашего GitHub repo.
 
-3. Хостинг веб-приложения на GitHub Pages (бесплатно, с HTTPS):
-   - Создайте новый репозиторий на GitHub (public).
-   - Загрузите файлы `index.html`, `game.js`, `style.css` в репозиторий.
-   - В настройках репозитория: Settings > Pages > Source: Deploy from a branch > Branch: main > Save.
-   - Получите URL, например, `https://yourusername.github.io/planexcash/`.
+3. Выберите проект, нажмите Deploy.
 
-4. В `bot.py` замените `WEB_APP_URL` на ваш GitHub Pages URL.
+4. Получите URL, например, `https://planexcash.vercel.app`.
 
-5. Запустите бота:
-   ```
-   python bot.py
-   ```
+5. В `bot.py` замените `WEB_APP_URL` на этот URL.
 
-6. В Telegram найдите бота по токену и нажмите /start. Кнопка откроет Web App с игрой.
+6. Установите Python и зависимости: `pip install -r requirements.txt`
 
-## Альтернатива с ngrok (если GitHub не подходит)
+7. Запустите бота: `python bot.py`
 
-Если ngrok блокирует IP:
-- Зарегистрируйтесь на https://ngrok.com и получите authtoken.
-- Запустите: `ngrok authtoken YOUR_TOKEN`
-- Затем: `ngrok http 8000`
+8. В Telegram найдите бота и нажмите /start.
+
+## Альтернатива с ngrok
+
+Если Vercel не подходит:
+- Зарегистрируйтесь на ngrok, получите token.
+- `ngrok authtoken YOUR_TOKEN`
+- Запустите сервер: `python -m http.server 8000`
+- `ngrok http 8000`
 - Используйте HTTPS URL в `bot.py`.
 
-## Примечания
-
-- GitHub Pages предоставляет бесплатный HTTPS.
-- Web App работает в Telegram, открывая мини-приложение.
+Бот запустится локально, Web App откроется в Telegram.
