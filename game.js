@@ -393,11 +393,107 @@ function initMenu() {
         });
     });
     
+    // Profile auth
+    if (isTelegramWebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
+        // Authorized via Telegram
+        document.getElementById('profileUsername').textContent = window.Telegram.WebApp.initDataUnsafe.user.username || window.Telegram.WebApp.initDataUnsafe.user.first_name || 'Неизвестно';
+        document.getElementById('profileRegDate').textContent = new Date().toLocaleDateString(); // Placeholder
+        document.getElementById('profileRegion').textContent = window.Telegram.WebApp.initDataUnsafe.user.language_code || 'Неизвестно';
+        document.getElementById('profileInfo').style.display = 'block';
+        document.getElementById('authButtons').style.display = 'none';
+    } else {
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+            // Authorized via form
+            document.getElementById('profileUsername').textContent = currentUser.username;
+            document.getElementById('profileRegDate').textContent = 'Неизвестно'; // Placeholder
+            document.getElementById('profileRegion').textContent = 'Неизвестно';
+            document.getElementById('profileInfo').style.display = 'block';
+            document.getElementById('authButtons').style.display = 'none';
+        } else {
+            // Not authorized
+            document.getElementById('profileInfo').style.display = 'none';
+            document.getElementById('authButtons').style.display = 'block';
+        }
+    }
+    
+    // Logout
+    document.getElementById('btnLogout').addEventListener('click', () => {
+        logoutUser();
+        alert('Выход выполнен');
+    });
+    
+    // Auth buttons
+    document.getElementById('btnLogin').addEventListener('click', () => {
+        document.getElementById('authModal').classList.remove('hidden');
+        document.getElementById('loginForm').classList.remove('hidden');
+        document.getElementById('registerForm').classList.add('hidden');
+    });
+    
+    document.getElementById('btnRegister').addEventListener('click', () => {
+        document.getElementById('authModal').classList.remove('hidden');
+        document.getElementById('registerForm').classList.remove('hidden');
+        document.getElementById('loginForm').classList.add('hidden');
+    });
+    
+    // Close auth modal
+    document.getElementById('closeAuth').addEventListener('click', () => {
+        document.getElementById('authModal').classList.add('hidden');
+    });
+    
+    // Auth forms
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const identifier = document.getElementById('loginIdentifier').value;
+        const password = document.getElementById('loginPassword').value;
+        const result = loginUser(identifier, password);
+        if (result.ok) {
+            document.getElementById('authModal').classList.add('hidden');
+            alert('Вход выполнен');
+        } else {
+            alert(result.msg);
+        }
+    });
+    
+    document.getElementById('registerForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('regLogin').value;
+        const email = document.getElementById('regEmail').value;
+        const phone = document.getElementById('regPhone').value;
+        const password = document.getElementById('regPassword').value;
+        const password2 = document.getElementById('regPassword2').value;
+        if (password !== password2) {
+            alert('Пароли не совпадают');
+            return;
+        }
+        const result = registerUser(username, email, password);
+        if (result.ok) {
+            result.user.phone = phone;
+            updateUser(result.user);
+            document.getElementById('authModal').classList.add('hidden');
+            alert('Регистрация выполнена');
+        } else {
+            alert(result.msg);
+        }
+    });
+    
     // Play game
     document.getElementById('playGameBtn').addEventListener('click', () => {
         document.getElementById('menuContainer').classList.add('hidden');
         document.getElementById('gameContainer').classList.remove('hidden');
         initGame();
+    });
+    
+    // Play game from games tab
+    document.querySelectorAll('.play-game-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const game = btn.dataset.game;
+            if (game === 'planecrash') {
+                document.getElementById('menuContainer').classList.add('hidden');
+                document.getElementById('gameContainer').classList.remove('hidden');
+                initGame();
+            }
+        });
     });
     
     // Back to menu

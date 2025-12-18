@@ -19,11 +19,6 @@
         <div class="menu-header">
             <div class="header-top">
                 <h1>HellPlay</h1>
-                <div class="auth-controls">
-                    <button id="btnLogin" class="auth-btn">Войти</button>
-                    <button id="btnRegister" class="auth-btn">Регистрация</button>
-                    <button id="btnLogout" class="auth-btn hidden">Выйти</button>
-                </div>
                 <div class="language-selector">
                     <button id="langRu" class="lang-btn active">🇷🇺 RU</button>
                     <button id="langEn" class="lang-btn">🇬🇧 EN</button>
@@ -32,15 +27,6 @@
             <div class="balance-info">
                 <div class="balance"><span data-lang="balance">БАЛАНС</span> <span id="balance">1000.00</span> <span data-lang="currency">РУБ</span></div>
             </div>
-        </div>
-        
-        <div class="menu-tabs">
-            <button class="tab-btn active" data-tab="profile">👤 Профиль</button>
-            <button class="tab-btn" data-tab="casino">🎰 Казино</button>
-            <button class="tab-btn" data-tab="wheel">🎡 Колесо</button>
-            <button class="tab-btn" data-tab="games">🎮 Игры</button>
-            <button class="tab-btn" data-tab="deposit">💰 Пополнение</button>
-            <button class="tab-btn" data-tab="settings">⚙️ Настройки</button>
         </div>
         
         <div class="menu-content">
@@ -57,10 +43,17 @@
             <div class="menu-main">
                 <div class="tab-content active" id="profile">
                     <h2>Профиль</h2>
-                    <div class="profile-info">
-                        <p><strong>Юзернейм:</strong> <span id="profileUsername">Неизвестно</span></p>
-                        <p><strong>Дата регистрации:</strong> <span id="profileRegDate">Неизвестно</span></p>
-                        <p><strong>Регион:</strong> <span id="profileRegion">Неизвестно</span></p>
+                    <div id="profileInfo">
+                        <div class="profile-info">
+                            <p><strong>Юзернейм:</strong> <span id="profileUsername">Неизвестно</span></p>
+                            <p><strong>Дата регистрации:</strong> <span id="profileRegDate">Неизвестно</span></p>
+                            <p><strong>Регион:</strong> <span id="profileRegion">Неизвестно</span></p>
+                        </div>
+                        <button id="btnLogout" class="auth-btn">Выйти</button>
+                    </div>
+                    <div id="authButtons" style="display: none;">
+                        <button id="btnLogin" class="auth-btn">Войти</button>
+                        <button id="btnRegister" class="auth-btn">Регистрация</button>
                     </div>
                 </div>
                 <div class="tab-content" id="casino">
