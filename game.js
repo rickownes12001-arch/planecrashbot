@@ -390,6 +390,27 @@ function initMenu() {
             } else {
                 console.error('Tab content not found:', tab);
             }
+            
+            // Additional actions based on tab
+            if (tab === 'casino') {
+                // Auto start the plane game
+                setTimeout(() => {
+                    document.getElementById('menuContainer').classList.add('hidden');
+                    document.getElementById('gameContainer').classList.remove('hidden');
+                    initGame();
+                }, 100);
+            } else if (tab === 'wheel') {
+                // Wheel is already shown, maybe auto spin or just show
+                // For now, just show
+            } else if (tab === 'profile') {
+                // Profile is shown, auth logic already handled
+            } else if (tab === 'games') {
+                // Games tab shown
+            } else if (tab === 'deposit') {
+                // Deposit tab shown
+            } else if (tab === 'settings') {
+                // Settings tab shown
+            }
         });
     });
     
