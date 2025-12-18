@@ -8,6 +8,7 @@ const speedSelect = document.getElementById('speedSelect');
 const balanceDisplay = document.getElementById('balance');
 const currentWinDisplay = document.getElementById('currentWin');
 const altitudeDisplay = document.getElementById('altitude');
+const multiplierDisplay = document.getElementById('multiplier');
 
 // Проверка на Telegram Web App
 let isTelegramWebApp = false;
