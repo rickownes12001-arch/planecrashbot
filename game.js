@@ -9,6 +9,7 @@ const balanceDisplay = document.getElementById('balance');
 const currentWinDisplay = document.getElementById('currentWin');
 const altitudeDisplay = document.getElementById('altitude');
 const multiplierDisplay = document.getElementById('multiplier');
+const distanceDisplay = document.getElementById('distance');
 
 // Проверка на Telegram Web App
 let isTelegramWebApp = false;
@@ -2368,6 +2369,7 @@ function drawStars() {
 
 // Обновление UI
 function updateUI() {
+    console.log('updateUI called, multiplierDisplay:', multiplierDisplay);
     // Menu balance
     const menuBalance = document.getElementById('balance');
     if (menuBalance) menuBalance.textContent = balance.toFixed(2);
