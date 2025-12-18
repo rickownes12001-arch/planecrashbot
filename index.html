@@ -15,8 +15,8 @@
         <div class="brand">PlaneXcra$h</div>
         <div class="loader">спасибо что выбрали нас</div>
     </div>
-    <div class="game-container">
-        <div class="game-header">
+    <div class="menu-container" id="menuContainer">
+        <div class="menu-header">
             <div class="header-top">
                 <h1>PlaneXcra$h</h1>
                 <div class="auth-controls">
@@ -32,6 +32,101 @@
             <div class="balance-info">
                 <div class="balance"><span data-lang="balance">БАЛАНС</span> <span id="balance">1000.00</span> <span data-lang="currency">РУБ</span></div>
                 <div class="current-win"><span data-lang="totalBet">СТАВКА</span> <span id="currentWin">0.00</span> <span data-lang="currency">РУБ</span></div>
+            </div>
+        </div>
+        
+        <div class="menu-tabs">
+            <button class="tab-btn active" data-tab="profile">👤 Профиль</button>
+            <button class="tab-btn" data-tab="casino">🎰 Казино</button>
+            <button class="tab-btn" data-tab="wheel">🎡 Колесо</button>
+            <button class="tab-btn" data-tab="games">🎮 Игры</button>
+            <button class="tab-btn" data-tab="deposit">💰 Пополнение</button>
+            <button class="tab-btn" data-tab="settings">⚙️ Настройки</button>
+        </div>
+        
+        <div class="menu-content">
+            <div class="tab-content active" id="profile">
+                <h2>Профиль</h2>
+                <p>Информация о пользователе</p>
+            </div>
+            <div class="tab-content" id="casino">
+                <h2>Казино</h2>
+                <button id="playGameBtn" class="play-btn">Играть в PlaneXcra$h</button>
+            </div>
+            <div class="tab-content" id="wheel">
+                <h2>Бесплатное колесо</h2>
+                <canvas id="wheelCanvas"></canvas>
+                <button id="spinWheelBtn" class="spin-btn">Крутить</button>
+                <p id="wheelResult"></p>
+            </div>
+            <div class="tab-content" id="games">
+                <h2>Игры</h2>
+                <div class="games-list">
+                    <div class="game-item">
+                        <h3>PlaneXcra$h</h3>
+                        <p>Авиационная игра</p>
+                        <button class="play-game-btn" data-game="planecrash">Играть</button>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-content" id="deposit">
+                <h2>Пополнение</h2>
+                <div class="deposit-section">
+                    <select id="currencySelect">
+                        <option value="btc">₿ Bitcoin</option>
+                        <option value="usd">$ USD</option>
+                        <option value="eur">€ EUR</option>
+                        <option value="rub">₽ RUB</option>
+                        <option value="usdt">₮ USDT TRC20</option>
+                    </select>
+                    <input type="number" id="depositAmount" placeholder="Сумма">
+                    <button id="depositBtn">Пополнить</button>
+                </div>
+                <div class="withdraw-section">
+                    <input type="number" id="withdrawAmount" placeholder="Сумма от 2000" min="2000">
+                    <button id="withdrawBtn">Вывести</button>
+                </div>
+            </div>
+            <div class="tab-content" id="settings">
+                <h2>Настройки</h2>
+                <div class="setting-item">
+                    <label>Звуки:</label>
+                    <input type="checkbox" id="soundToggle" checked>
+                </div>
+                <div class="setting-item">
+                    <label>Регион:</label>
+                    <select id="regionSelect">
+                        <option value="ru">Россия</option>
+                        <option value="en">USA</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>Язык:</label>
+                    <select id="languageSelect">
+                        <option value="ru">Русский</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>by @attackculted</p>
+        </div>
+    </div>
+    
+    <!-- Game Container (hidden initially) -->
+    <div class="game-container hidden" id="gameContainer">
+        <div class="game-header">
+            <div class="header-top">
+                <h1>PlaneXcra$h</h1>
+                <div class="back-btn">
+                    <button id="backToMenuBtn">← Назад</button>
+                </div>
+            </div>
+            <div class="balance-info">
+                <div class="balance"><span data-lang="balance">БАЛАНС</span> <span id="gameBalance">1000.00</span> <span data-lang="currency">РУБ</span></div>
+                <div class="current-win"><span data-lang="totalBet">СТАВКА</span> <span id="gameCurrentWin">0.00</span> <span data-lang="currency">РУБ</span></div>
             </div>
         </div>
         

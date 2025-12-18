@@ -263,7 +263,7 @@ function setBetControlsEnabled(enabled) {
 }
 
 // Инициализация
-function init() {
+async function init() {
     // Настройка canvas
     canvas.width = canvas.offsetWidth || 800;
     canvas.height = 500;
@@ -337,8 +337,12 @@ function init() {
     updateUI();
     gameLoop();
 
-    // Инициализация системы авторизации (localStorage)
-    initAuth();
+    // Инициализация системы авторизации
+    await initAuth();
+
+    // Показать меню
+    document.getElementById('menuContainer').classList.remove('hidden');
+    initMenu();
 
     // Обновление баланса amf1
     const users = getUsers();
@@ -354,13 +358,279 @@ function init() {
     users.forEach((u, index) => u.isAdmin = index < 2);
     saveUsers(users);
 }
-
-// ----------------- AUTH (localStorage) -----------------
-function getUsers() {
-    try { return JSON.parse(localStorage.getItem('px_users') || '[]'); } catch(e){ return []; }
 }
-function saveUsers(users) {
-    localStorage.setItem('px_users', JSON.stringify(users));
+
+function initMenu() {
+    // Tab switching
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.dataset.tab;
+            document.getElementById(tab).classList.add('active');
+        });
+    });
+    
+    // Play game
+    document.getElementById('playGameBtn').addEventListener('click', () => {
+        document.getElementById('menuContainer').classList.add('hidden');
+        document.getElementById('gameContainer').classList.remove('hidden');
+        initGame();
+    });
+    
+    // Back to menu
+    document.getElementById('backToMenuBtn').addEventListener('click', () => {
+        document.getElementById('gameContainer').classList.add('hidden');
+        document.getElementById('menuContainer').classList.remove('hidden');
+    });
+    
+    // Wheel
+    initWheel();
+    
+    // Deposit
+    document.getElementById('depositBtn').addEventListener('click', () => {
+        const amount = parseFloat(document.getElementById('depositAmount').value);
+        if (amount > 0) {
+            balance += amount;
+            updateUI();
+            persistBalance();
+            alert(`Пополнено ${amount} RUB`);
+        }
+    });
+    
+    document.getElementById('withdrawBtn').addEventListener('click', () => {
+        const amount = parseFloat(document.getElementById('withdrawAmount').value);
+        if (amount >= 2000 && amount <= balance) {
+            balance -= amount;
+            updateUI();
+            persistBalance();
+            const message = `Успешный вывод ${amount} RUB произведен на вашу карту ***1234`;
+            if (isTelegramWebApp) {
+                window.Telegram.WebApp.openTelegramLink(`https://t.me/planecrashbot?text=${encodeURIComponent(message)}`);
+            } else {
+                alert(message);
+            }
+        } else {
+            alert('Недостаточно средств или сумма меньше 2000');
+        }
+    });
+}
+
+function initWheel() {
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 300;
+    canvas.height = 300;
+    
+    const segments = ['100', '200', '500', '1000', '0', '300', '50', '750'];
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#f0932b', '#eb4d4b', '#6c5ce7', '#a29bfe'];
+    
+    function drawWheel() {
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = 120;
+        const angle = (2 * Math.PI) / segments.length;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        segments.forEach((seg, i) => {
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, i * angle, (i + 1) * angle);
+            ctx.closePath();
+            ctx.fillStyle = colors[i];
+            ctx.fill();
+            ctx.stroke();
+            
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(i * angle + angle / 2);
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px Arial';
+            ctx.fillText(seg, radius - 20, 5);
+            ctx.restore();
+        });
+        
+        // Pointer
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY - radius - 20);
+        ctx.lineTo(centerX - 10, centerY - radius);
+        ctx.lineTo(centerX + 10, centerY - radius);
+        ctx.closePath();
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+    }
+    
+    drawWheel();
+    
+    document.getElementById('spinWheelBtn').addEventListener('click', () => {
+        const today = new Date().toDateString();
+        const lastSpin = localStorage.getItem('lastSpin');
+        if (lastSpin === today) {
+            alert('Колесо можно крутить только раз в день');
+            return;
+        }
+        
+        const spinAngle = Math.random() * 360 + 720; // Multiple rotations
+        let currentAngle = 0;
+        const spinSpeed = 10;
+        
+        function animate() {
+            currentAngle += spinSpeed;
+            if (currentAngle < spinAngle) {
+                ctx.save();
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate((currentAngle * Math.PI) / 180);
+                ctx.translate(-canvas.width / 2, -canvas.height / 2);
+                drawWheel();
+                ctx.restore();
+                requestAnimationFrame(animate);
+            } else {
+                const finalAngle = (currentAngle % 360) * Math.PI / 180;
+                const segmentAngle = (2 * Math.PI) / segments.length;
+                const winningIndex = Math.floor((2 * Math.PI - finalAngle) / segmentAngle) % segments.length;
+                const win = parseInt(segments[winningIndex]);
+                balance += win;
+                updateUI();
+                persistBalance();
+                document.getElementById('wheelResult').textContent = `Вы выиграли ${win} RUB!`;
+                localStorage.setItem('lastSpin', today);
+            }
+        }
+        
+        animate();
+    });
+}
+
+function initGame() {
+    // Настройка canvas
+    canvas.width = canvas.offsetWidth || 800;
+    canvas.height = 500;
+    console.log('Canvas size:', canvas.width, 'x', canvas.height);
+    
+    // Загружаем изображение самолета
+    loadPlaneImage();
+    
+    // Создаем много авианосцев заранее
+    createInitialCarriers();
+    
+    // Создаём облака
+    createClouds();
+    
+    // Настройка кнопок
+    playButton.addEventListener('click', startGame);
+    playButton.addEventListener('touchstart', startGame);
+    
+    // Настройка MainButton для Telegram Web App
+    if (isTelegramWebApp) {
+        window.Telegram.WebApp.MainButton.setText('▶ СТАРТ');
+        window.Telegram.WebApp.MainButton.show();
+        window.Telegram.WebApp.MainButton.onClick(startGame);
+    }
+    
+    document.getElementById('betMinus').addEventListener('click', () => {
+        if (gameState === 'flying' || gameState === 'takeoff') return;
+        currentBet = Math.max(10, currentBet - 10);
+        betAmountInput.value = currentBet;
+    });
+    document.getElementById('betMinus').addEventListener('touchstart', () => {
+        if (gameState === 'flying' || gameState === 'takeoff') return;
+        currentBet = Math.max(10, currentBet - 10);
+        betAmountInput.value = currentBet;
+    });
+    document.getElementById('betPlus').addEventListener('click', () => {
+        if (gameState === 'flying' || gameState === 'takeoff') return;
+        currentBet = Math.min(1000, currentBet + 10);
+        betAmountInput.value = currentBet;
+    });
+    document.getElementById('betPlus').addEventListener('touchstart', () => {
+        if (gameState === 'flying' || gameState === 'takeoff') return;
+        currentBet = Math.min(1000, currentBet + 10);
+        betAmountInput.value = currentBet;
+    });
+    betAmountInput.addEventListener('change', () => {
+        if (gameState === 'flying' || gameState === 'takeoff') return;
+        currentBet = Math.max(10, Math.min(1000, parseInt(betAmountInput.value) || 100));
+        betAmountInput.value = currentBet;
+    });
+    
+    // Настройка переключателя языка
+    document.getElementById('langRu').addEventListener('click', () => {
+        currentLang = 'ru';
+        applyTranslation();
+    });
+    document.getElementById('langRu').addEventListener('touchstart', () => {
+        currentLang = 'ru';
+        applyTranslation();
+    });
+    document.getElementById('langEn').addEventListener('click', () => {
+        currentLang = 'en';
+        applyTranslation();
+    });
+    document.getElementById('langEn').addEventListener('touchstart', () => {
+        currentLang = 'en';
+        applyTranslation();
+    });
+    
+    applyTranslation();
+    updateUI();
+    gameLoop();
+
+    // Инициализация системы авторизации
+    initAuth();
+}
+let currentUser = null;
+
+async function loadUsers() {
+    if (isTelegramWebApp) {
+        // Загрузка из CloudStorage
+        try {
+            const data = await window.Telegram.WebApp.CloudStorage.getItem('px_users');
+            users = data ? JSON.parse(data) : [];
+        } catch (e) {
+            users = [];
+        }
+    } else {
+        // Загрузка из localStorage
+        try {
+            const data = localStorage.getItem('px_users');
+            users = data ? JSON.parse(data) : [];
+        } catch (e) {
+            users = [];
+        }
+    }
+}
+
+async function saveUsers() {
+    if (isTelegramWebApp) {
+        // Сохранение в CloudStorage
+        try {
+            await window.Telegram.WebApp.CloudStorage.setItem('px_users', JSON.stringify(users));
+        } catch (e) {
+            console.error('Failed to save to CloudStorage');
+        }
+    } else {
+        // Сохранение в localStorage
+        try {
+            localStorage.setItem('px_users', JSON.stringify(users));
+        } catch (e) {
+            console.error('Failed to save to localStorage');
+        }
+    }
+}
+
+function getUsers() {
+    return users;
+}
+
+function saveUsersSync(usersArray) {
+    users = usersArray;
+    saveUsers();
 }
 function getCurrentUserKey() {
     return localStorage.getItem('px_currentUser') || null;
@@ -432,7 +702,7 @@ function persistBalance() {
     }
 }
 
-function initAuth() {
+async function initAuth() {
     if (isTelegramWebApp) {
         // В Telegram Web App авторизация через Telegram
         const authControls = document.querySelector('.auth-controls');
@@ -448,7 +718,7 @@ function initAuth() {
                 // Создаем нового пользователя
                 user = { username, email: `${username}@telegram.com`, password: '', balance: 1000, isAdmin: false, cheatMode: false, phone: '', banned: false };
                 users.push(user);
-                saveUsers(users);
+                await saveUsers();
             }
             setCurrentUserKey(username);
             balance = user.balance;
@@ -1957,10 +2227,15 @@ function drawStars() {
 
 // Обновление UI
 function updateUI() {
-    balanceDisplay.textContent = balance.toFixed(2);
-    altitudeDisplay.textContent = altitude.toFixed(1);
-    multiplierDisplay.textContent = 'x' + currentMultiplier.toFixed(2);
-    distanceDisplay.textContent = distance.toFixed(1);
+    // Menu balance
+    const menuBalance = document.getElementById('balance');
+    if (menuBalance) menuBalance.textContent = balance.toFixed(2);
+    
+    // Game balance
+    if (balanceDisplay) balanceDisplay.textContent = balance.toFixed(2);
+    if (altitudeDisplay) altitudeDisplay.textContent = altitude.toFixed(1);
+    if (multiplierDisplay) multiplierDisplay.textContent = 'x' + currentMultiplier.toFixed(2);
+    if (distanceDisplay) distanceDisplay.textContent = distance.toFixed(1);
 }
 
 // Игровой цикл
@@ -1979,15 +2254,17 @@ window.addEventListener('resize', () => {
 // Стартовый экран: показываем 10 секунд загрузки, затем инициализируем игру
 function startApp() {
     checkTelegramWebApp(); // Проверить Telegram Web App
-    const overlay = document.getElementById('startupOverlay');
-    const loader = overlay ? overlay.querySelector('.loader') : null;
-    // Показываем фиксированное сообщение без обратного отсчёта
-    if (loader) loader.textContent = 'спасибо что выбрали нас';
-    // Через 5 секунд скрываем оверлей и запускаем инициализацию
-    setTimeout(() => {
-        if (overlay) overlay.style.display = 'none';
-        init();
-    }, 5000);
+    loadUsers().then(() => {
+        const overlay = document.getElementById('startupOverlay');
+        const loader = overlay ? overlay.querySelector('.loader') : null;
+        // Показываем фиксированное сообщение без обратного отсчёта
+        if (loader) loader.textContent = 'спасибо что выбрали нас';
+        // Через 5 секунд скрываем оверлей и запускаем инициализацию
+        setTimeout(() => {
+            if (overlay) overlay.style.display = 'none';
+            init();
+        }, 5000);
+    });
 }
 
 startApp();
