@@ -40,6 +40,15 @@ async function initApp() {
         if (overlay) overlay.style.display = 'none';
         init();
     }, 5000);
+    
+    // Автоматический полноэкранный режим для браузера
+    if (!isTelegramWebApp) {
+        document.addEventListener('click', () => {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(err => console.log('Fullscreen failed:', err));
+            }
+        }, { once: true });
+    }
 }
 
 initApp();
