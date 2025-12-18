@@ -5,11 +5,7 @@ const ctx = canvas.getContext('2d');
 const playButton = document.getElementById('playButton');
 const betAmountInput = document.getElementById('betAmount');
 const speedSelect = document.getElementById('speedSelect');
-const balanceDisplay = document.getElementById('balance');
-const currentWinDisplay = document.getElementById('currentWin');
-const altitudeDisplay = document.getElementById('altitude');
-const multiplierDisplay = document.getElementById('multiplier');
-const distanceDisplay = document.getElementById('distance');
+let balanceDisplay, currentWinDisplay, altitudeDisplay, multiplierDisplay, distanceDisplay;
 
 // Проверка на Telegram Web App
 let isTelegramWebApp = false;
@@ -280,6 +276,13 @@ async function init() {
     canvas.width = canvas.offsetWidth || 800;
     canvas.height = 500;
     console.log('Canvas size:', canvas.width, 'x', canvas.height);
+    
+    // Define display elements after DOM is ready
+    balanceDisplay = document.getElementById('balance');
+    currentWinDisplay = document.getElementById('currentWin');
+    altitudeDisplay = document.getElementById('altitude');
+    multiplierDisplay = document.getElementById('multiplier');
+    distanceDisplay = document.getElementById('distance');
     
     // Загружаем изображение самолета
     loadPlaneImage();
