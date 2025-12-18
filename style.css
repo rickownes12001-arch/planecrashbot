@@ -235,7 +235,6 @@ body {
     align-items: center;
     background: rgba(0,0,0,0.6);
     z-index: 10000;
-    pointer-events: none;
 }
 .auth-modal.hidden { display: none; }
 .auth-box {
