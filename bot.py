@@ -1,25 +1,34 @@
 import asyncio
-from aiogram import Bot, Dispatcher, types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiogram import Bot, Dispatcher
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiogram.filters import Command
 
 # Токен бота
 TOKEN = '8567898385:AAEXTjP9O__yknkQRK2SPBYLRe77XcEYD_s'
 
 # URL веб-приложения (замените на ваш HTTPS URL, например, от GitHub Pages)
-WEB_APP_URL = 'https://yourusername.github.io/planexcash/'  # Замените на реальный URL
+WEB_APP_URL = 'https://planecrashbot.vercel.app/'  # Замените на реальный URL
 
 bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher()
 
-@dp.message_handler(commands=['start'])
-async def start(message: types.Message):
-    keyboard = InlineKeyboardMarkup()
-    keyboard.add(InlineKeyboardButton(
-        text="Играть в PlaneXcra$h",
-        web_app=WebAppInfo(url=WEB_APP_URL)
-    ))
+@dp.message(Command("start"))
+async def start(message: Message):
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(
+                text="Играть в PlaneXcra$h",
+                web_app=WebAppInfo(url=WEB_APP_URL)
+            )]
+        ]
+    )
     await message.reply("Добро пожаловать! Нажмите кнопку, чтобы начать игру.", reply_markup=keyboard)
 
+async def main():
+    try:
+        await dp.start_polling(bot)
+    except Exception as e:
+        print(f"Ошибка при запуске бота: {e}")
+
 if __name__ == '__main__':
-    from aiogram import executor
-    executor.start_polling(dp, skip_updates=True)
+    asyncio.run(main())

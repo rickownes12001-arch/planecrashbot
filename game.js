@@ -1,4 +1,5 @@
 // Игровые переменные
+console.log('Game script loaded');
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const playButton = document.getElementById('playButton');
@@ -7,6 +8,20 @@ const speedSelect = document.getElementById('speedSelect');
 const balanceDisplay = document.getElementById('balance');
 const currentWinDisplay = document.getElementById('currentWin');
 const altitudeDisplay = document.getElementById('altitude');
+
+// Проверка на Telegram Web App
+let isTelegramWebApp = false;
+if (window.Telegram && window.Telegram.WebApp) {
+    isTelegramWebApp = true;
+    console.log('Running in Telegram Web App');
+    // Настройка Web App
+    window.Telegram.WebApp.expand(); // Развернуть на весь экран
+    window.Telegram.WebApp.setHeaderColor('#0a0e27'); // Цвет заголовка
+    // Скрыть HTML кнопку play, использовать MainButton
+    if (playButton) playButton.style.display = 'none';
+} else {
+    console.log('Running in browser');
+}
 const multiplierDisplay = document.getElementById('multiplier');
 const distanceDisplay = document.getElementById('distance');
 const gameOverlay = document.getElementById('gameOverlay');
@@ -154,54 +169,12 @@ const rocketSpawnChance = 0.25; // Увеличена частота появл�
 // Загрузка изображения самолета с удалением белого фона
 function loadPlaneImage() {
     const img = new Image();
+    img.crossOrigin = 'anonymous'; // Для загрузки с другого домена
     img.onload = function() {
         console.log('Изображение самолета загружено, размер:', img.width, 'x', img.height);
-        // Создаем временный canvas для обработки изображения
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCanvas.width = img.width;
-        tempCanvas.height = img.height;
-        
-        // Рисуем изображение
-        tempCtx.drawImage(img, 0, 0);
-        
-        // Получаем данные пикселей
-        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-        const data = imageData.data;
-        
-        // Удаляем белый фон и прозрачные пиксели (делаем прозрачным)
-        for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-            const a = data[i + 3];
-            
-            // Если пиксель уже прозрачный, пропускаем
-            if (a === 0) continue;
-            
-            // Удаляем белый фон (более точная проверка)
-            // Проверяем, является ли пиксель белым или очень светлым
-            const brightness = (r + g + b) / 3;
-            const isWhite = r > 220 && g > 220 && b > 220 && brightness > 230;
-            
-            // Также удаляем очень светлые пиксели (почти белые)
-            if (isWhite || (brightness > 240 && Math.abs(r - g) < 15 && Math.abs(g - b) < 15)) {
-                data[i + 3] = 0; // Устанавливаем альфа-канал в 0 (прозрачный)
-            }
-        }
-        
-        // Применяем изменения
-        tempCtx.putImageData(imageData, 0, 0);
-        
-        // Сохраняем обработанное изображение
-        plane.image = new Image();
-        plane.image.onload = function() {
-            console.log('Обработанное изображение самолета готово');
-        };
-        plane.image.onerror = function() {
-            console.error('Ошибка при создании обработанного изображения');
-        };
-        plane.image.src = tempCanvas.toDataURL();
+        // Просто используем изображение как есть, без обработки
+        plane.image = img;
+        console.log('Изображение самолета готово');
     };
     img.onerror = function() {
         console.error('Ошибка загрузки изображения самолета. Проверьте, что файл plane.png существует в папке проекта.');
@@ -283,6 +256,11 @@ function setBetControlsEnabled(enabled) {
 
 // Инициализация
 function init() {
+    // Настройка canvas
+    canvas.width = canvas.offsetWidth || 800;
+    canvas.height = 500;
+    console.log('Canvas size:', canvas.width, 'x', canvas.height);
+    
     // Загружаем изображение самолета
     loadPlaneImage();
     
@@ -294,12 +272,31 @@ function init() {
     
     // Настройка кнопок
     playButton.addEventListener('click', startGame);
+    playButton.addEventListener('touchstart', startGame);
+    
+    // Настройка MainButton для Telegram Web App
+    if (isTelegramWebApp) {
+        window.Telegram.WebApp.MainButton.setText('▶ СТАРТ');
+        window.Telegram.WebApp.MainButton.show();
+        window.Telegram.WebApp.MainButton.onClick(startGame);
+    }
+    
     document.getElementById('betMinus').addEventListener('click', () => {
         if (gameState === 'flying' || gameState === 'takeoff') return;
         currentBet = Math.max(10, currentBet - 10);
         betAmountInput.value = currentBet;
     });
+    document.getElementById('betMinus').addEventListener('touchstart', () => {
+        if (gameState === 'flying' || gameState === 'takeoff') return;
+        currentBet = Math.max(10, currentBet - 10);
+        betAmountInput.value = currentBet;
+    });
     document.getElementById('betPlus').addEventListener('click', () => {
+        if (gameState === 'flying' || gameState === 'takeoff') return;
+        currentBet = Math.min(1000, currentBet + 10);
+        betAmountInput.value = currentBet;
+    });
+    document.getElementById('betPlus').addEventListener('touchstart', () => {
         if (gameState === 'flying' || gameState === 'takeoff') return;
         currentBet = Math.min(1000, currentBet + 10);
         betAmountInput.value = currentBet;
@@ -315,7 +312,15 @@ function init() {
         currentLang = 'ru';
         applyTranslation();
     });
+    document.getElementById('langRu').addEventListener('touchstart', () => {
+        currentLang = 'ru';
+        applyTranslation();
+    });
     document.getElementById('langEn').addEventListener('click', () => {
+        currentLang = 'en';
+        applyTranslation();
+    });
+    document.getElementById('langEn').addEventListener('touchstart', () => {
         currentLang = 'en';
         applyTranslation();
     });
@@ -420,6 +425,29 @@ function persistBalance() {
 }
 
 function initAuth() {
+    if (isTelegramWebApp) {
+        // В Telegram Web App авторизация через Telegram
+        const authControls = document.querySelector('.auth-controls');
+        if (authControls) authControls.style.display = 'none';
+        
+        // Автоматическая авторизация с Telegram данными
+        const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+        if (tgUser) {
+            const username = `tg_${tgUser.id}`;
+            let user = findUserByUsername(username);
+            if (!user) {
+                // Создаем нового пользователя
+                user = { username, email: `${username}@telegram.com`, password: '', balance: 1000, isAdmin: false, cheatMode: false, phone: '', banned: false };
+                users.push(user);
+                saveUsers(users);
+            }
+            setCurrentUserKey(username);
+            balance = user.balance;
+            updateUI();
+        }
+        return; // Не инициализируем локальную авторизацию
+    }
+    
     // Elements
     const btnLogin = document.getElementById('btnLogin');
     const btnRegister = document.getElementById('btnRegister');
@@ -457,11 +485,26 @@ function initAuth() {
         else { registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); }
     }
 
-    if (btnLogin) btnLogin.addEventListener('click', () => openAuth('login'));
-    if (btnRegister) btnRegister.addEventListener('click', () => openAuth('register'));
-    if (closeAuth) closeAuth.addEventListener('click', () => authModal.classList.add('hidden'));
-    if (showLogin) showLogin.addEventListener('click', () => { loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); });
-    if (showRegister) showRegister.addEventListener('click', () => { registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); });
+    if (btnLogin) {
+        btnLogin.addEventListener('click', () => openAuth('login'));
+        btnLogin.addEventListener('touchstart', () => openAuth('login'));
+    }
+    if (btnRegister) {
+        btnRegister.addEventListener('click', () => openAuth('register'));
+        btnRegister.addEventListener('touchstart', () => openAuth('register'));
+    }
+    if (closeAuth) {
+        closeAuth.addEventListener('click', () => authModal.classList.add('hidden'));
+        closeAuth.addEventListener('touchstart', () => authModal.classList.add('hidden'));
+    }
+    if (showLogin) {
+        showLogin.addEventListener('click', () => { loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); });
+        showLogin.addEventListener('touchstart', () => { loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); });
+    }
+    if (showRegister) {
+        showRegister.addEventListener('click', () => { registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); });
+        showRegister.addEventListener('touchstart', () => { registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); });
+    }
 
     if (loginForm) loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -785,6 +828,7 @@ function startGame() {
     gameOverlay.classList.add('hidden');
     // добавляем реальное отключение кнопки во время полёта
     playButton.disabled = true;
+    if (isTelegramWebApp) window.Telegram.WebApp.MainButton.hide();
 
     // persist balance change (списание ставки)
     persistBalance();
@@ -1309,6 +1353,8 @@ function land() {
     gameOverlay.classList.remove('hidden');
     playButton.disabled = false;
     setBetControlsEnabled(true); // Разблокируем ставки
+    gameState = 'waiting'; // Сброс состояния
+    if (isTelegramWebApp) window.Telegram.WebApp.MainButton.show();
     // Если это настоящий МЕГА ВЫИГРЫШ (множитель >= x25), показываем фейерверки и надпись
     if (currentMultiplier >= 25) {
         megaWinActive = true;
@@ -1340,6 +1386,8 @@ function crash() {
     gameOverlay.classList.remove('hidden');
     playButton.disabled = false;
     setBetControlsEnabled(true); // Разблокируем ставки
+    gameState = 'waiting'; // Сброс состояния
+    if (isTelegramWebApp) window.Telegram.WebApp.MainButton.show();
     resetGame();
 }
 
