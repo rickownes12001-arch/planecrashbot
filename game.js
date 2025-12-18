@@ -374,13 +374,22 @@ function initMenu() {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     
+    console.log('Tab buttons found:', tabBtns.length);
+    console.log('Tab contents found:', tabContents.length);
+    
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
+            console.log('Tab clicked:', btn.dataset.tab);
             tabBtns.forEach(b => b.classList.remove('active'));
             tabContents.forEach(c => c.classList.remove('active'));
             btn.classList.add('active');
             const tab = btn.dataset.tab;
-            document.getElementById(tab).classList.add('active');
+            const content = document.getElementById(tab);
+            if (content) {
+                content.classList.add('active');
+            } else {
+                console.error('Tab content not found:', tab);
+            }
         });
     });
     
