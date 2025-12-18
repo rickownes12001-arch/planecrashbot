@@ -11,17 +11,24 @@ const altitudeDisplay = document.getElementById('altitude');
 
 // Проверка на Telegram Web App
 let isTelegramWebApp = false;
-if (window.Telegram && window.Telegram.WebApp) {
-    isTelegramWebApp = true;
-    console.log('Running in Telegram Web App');
-    // Настройка Web App
-    window.Telegram.WebApp.expand(); // Развернуть на весь экран
-    window.Telegram.WebApp.setHeaderColor('#0a0e27'); // Цвет заголовка
-    // Скрыть HTML кнопку play, использовать MainButton
-    if (playButton) playButton.style.display = 'none';
-} else {
-    console.log('Running in browser');
+
+function checkTelegramWebApp() {
+    if (window.Telegram && window.Telegram.WebApp) {
+        isTelegramWebApp = true;
+        console.log('Running in Telegram Web App');
+        // Настройка Web App
+        window.Telegram.WebApp.expand(); // Развернуть на весь экран
+        window.Telegram.WebApp.setHeaderColor('#0a0e27'); // Цвет заголовка
+        // Скрыть HTML кнопку play, использовать MainButton
+        if (playButton) playButton.style.display = 'none';
+    } else {
+        console.log('Running in browser');
+    }
 }
+
+// Проверить сразу и через таймаут на случай асинхронной загрузки
+checkTelegramWebApp();
+setTimeout(checkTelegramWebApp, 1000);
 const multiplierDisplay = document.getElementById('multiplier');
 const distanceDisplay = document.getElementById('distance');
 const gameOverlay = document.getElementById('gameOverlay');
@@ -1967,6 +1974,7 @@ window.addEventListener('resize', () => {
 
 // Стартовый экран: показываем 10 секунд загрузки, затем инициализируем игру
 function startApp() {
+    checkTelegramWebApp(); // Проверить Telegram Web App
     const overlay = document.getElementById('startupOverlay');
     const loader = overlay ? overlay.querySelector('.loader') : null;
     // Показываем фиксированное сообщение без обратного отсчёта
