@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviamaster - Игра</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="startup-overlay" id="startupOverlay">
+        <div class="brand">PlaneXcra$h</div>
+        <div class="loader">спасибо что выбрали нас</div>
+    </div>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="header-top">
+                <h1>PlaneXcra$h</h1>
+                <div class="auth-controls">
+                    <button id="btnLogin" class="auth-btn">Войти</button>
+                    <button id="btnRegister" class="auth-btn">Регистрация</button>
+                    <button id="btnLogout" class="auth-btn hidden">Выйти</button>
+                </div>
+                <div class="language-selector">
+                    <button id="langRu" class="lang-btn active">🇷🇺 RU</button>
+                    <button id="langEn" class="lang-btn">🇬🇧 EN</button>
+                </div>
+            </div>
+            <div class="balance-info">
+                <div class="balance"><span data-lang="balance">БАЛАНС</span> <span id="balance">1000.00</span> <span data-lang="currency">РУБ</span></div>
+                <div class="current-win"><span data-lang="totalBet">СТАВКА</span> <span id="currentWin">0.00</span> <span data-lang="currency">РУБ</span></div>
+            </div>
+        </div>
+        
+        <div class="game-area">
+            <canvas id="gameCanvas"></canvas>
+            <div class="game-overlay" id="gameOverlay">
+                <div class="overlay-content">
+                    <h2 id="overlayTitle">Ready to Fly!</h2>
+                    <p id="overlayMessage">Select your bet and press Play</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-controls">
+            <div class="last-win" id="lastWinDisplay">Последний выигрыш: <span id="lastWinValue">0.00</span></div>
+            <div class="bet-controls">
+                <label data-lang="bet">СТАВКА:</label>
+                <button id="betMinus">▼</button>
+                <input type="number" id="betAmount" min="10" max="1000" value="100" step="10">
+                <button id="betPlus">▲</button>
+            </div>
+            
+            <div class="speed-controls">
+                <label data-lang="speed">СКОРОСТЬ:</label>
+                <select id="speedSelect">
+                    <option value="normal" selected data-lang-option="human">👤 Человек</option>
+                    <option value="fast" data-lang-option="hare">🐰 Заяц</option>
+                    <option value="veryfast" data-lang-option="lightning">⚡ Молния</option>
+                </select>
+            </div>
+            
+            <button id="playButton" class="play-button" data-lang="play">▶ СТАРТ</button>
+            <button id="btnAdmin" class="auth-btn hidden">Админ</button>
+        </div>
+        
+        <div class="game-stats">
+            <button class="stat-button">
+                <span class="stat-label" data-lang="altitude">ВЫСОТА</span>
+                <span class="stat-value" id="altitude">0.0</span>
+                <span class="stat-unit" data-lang="meters">м</span>
+            </button>
+            <button class="stat-button">
+                <span class="stat-label" data-lang="distance">ДИСТАНЦИЯ</span>
+                <span class="stat-value" id="distance">0.0</span>
+                <span class="stat-unit" data-lang="meters">м</span>
+            </button>
+            <button class="stat-button">
+                <span class="stat-label" data-lang="multiplier">МНОЖИТЕЛЬ</span>
+                <span class="stat-value" id="multiplier">x1.00</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Admin Panel Modal -->
+    <div id="adminModal" class="auth-modal hidden">
+        <div class="auth-box">
+            <button class="close-auth" id="closeAdmin">✕</button>
+            <h3>Админ Панель</h3>
+            <div class="admin-section">
+                <h4>Повысить баланс</h4>
+                <input type="number" id="adminBalanceAmount" min="0" max="100000" placeholder="Сумма до 100k">
+                <button id="adminAddBalance">Добавить</button>
+            </div>
+            <div class="admin-section">
+                <h4>Подкрутка (100% x25)</h4>
+                <button id="adminToggleCheat">Включить/Выключить</button>
+                <span id="cheatStatus">Выключено</span>
+            </div>
+            <div class="admin-section">
+                <h4>Блокировка игрока</h4>
+                <input type="text" id="adminBanUsername" placeholder="Ник пользователя">
+                <button id="adminBanUser">Заблокировать</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 2FA Modal -->
+    <div id="twoFAModal" class="auth-modal hidden">
+        <div class="auth-box">
+            <h3>Двухэтапная аутентификация</h3>
+            <p>SMS отправлено на ваш номер. Введите код:</p>
+            <input type="text" id="twoFACode" placeholder="Код из SMS">
+            <button id="verify2FA">Подтвердить</button>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+
+    <!-- Auth modals -->
+    <div id="authModal" class="auth-modal hidden">
+        <div class="auth-box">
+            <button class="close-auth" id="closeAuth">✕</button>
+            <div class="auth-forms">
+                <form id="loginForm" class="auth-form">
+                    <h3>Вход</h3>
+                    <label>Логин или почта</label>
+                    <input id="loginIdentifier" type="text" required>
+                    <label>Пароль</label>
+                    <input id="loginPassword" type="password" required>
+                    <button type="submit" class="auth-submit">Войти</button>
+                </form>
+
+                <form id="registerForm" class="auth-form hidden">
+                    <h3>Регистрация</h3>
+                    <label>Логин</label>
+                    <input id="regLogin" type="text" required>
+                    <label>Почта</label>
+                    <input id="regEmail" type="email" required>
+                    <label>Телефон</label>
+                    <input id="regPhone" type="tel" placeholder="+7XXXXXXXXXX">
+                    <label>Пароль</label>
+                    <input id="regPassword" type="password" required>
+                    <label>Подтвердите пароль</label>
+                    <input id="regPassword2" type="password" required>
+                    <button type="submit" class="auth-submit">Зарегистрироваться</button>
+                </form>
+            </div>
+            <div class="auth-switch">
+                <button id="showLogin" class="switch-btn">У меня есть аккаунт</button>
+                <button id="showRegister" class="switch-btn">Создать аккаунт</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
