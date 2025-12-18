@@ -28,13 +28,23 @@ function checkTelegramWebApp() {
 }
 
 // Проверить сразу и через таймаут на случай асинхронной загрузки
-checkTelegramWebApp();
-setTimeout(checkTelegramWebApp, 1000);
-const multiplierDisplay = document.getElementById('multiplier');
-const distanceDisplay = document.getElementById('distance');
-const gameOverlay = document.getElementById('gameOverlay');
-const overlayTitle = document.getElementById('overlayTitle');
-const overlayMessage = document.getElementById('overlayMessage');
+async function initApp() {
+    checkTelegramWebApp();
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Ждать 1 сек
+    checkTelegramWebApp(); // Проверить снова
+    await loadUsers();
+    const overlay = document.getElementById('startupOverlay');
+    const loader = overlay ? overlay.querySelector('.loader') : null;
+    // Показываем фиксированное сообщение без обратного отсчёта
+    if (loader) loader.textContent = 'спасибо что выбрали нас';
+    // Через 5 секунд скрываем оверлей и запускаем инициализацию
+    setTimeout(() => {
+        if (overlay) overlay.style.display = 'none';
+        init();
+    }, 5000);
+}
+
+initApp();
 
 // Система локализации
 let currentLang = 'ru';
@@ -358,7 +368,6 @@ async function init() {
     users.forEach((u, index) => u.isAdmin = index < 2);
     saveUsers(users);
 }
-}
 
 function initMenu() {
     // Tab switching
@@ -508,6 +517,10 @@ function initWheel() {
 }
 
 function initGame() {
+    // Переопределить переменные для игры
+    balanceDisplay = document.getElementById('gameBalance');
+    currentWinDisplay = document.getElementById('gameCurrentWin');
+    
     // Настройка canvas
     canvas.width = canvas.offsetWidth || 800;
     canvas.height = 500;
@@ -2232,6 +2245,11 @@ function updateUI() {
     if (menuBalance) menuBalance.textContent = balance.toFixed(2);
     
     // Game balance
+    const gameBalance = document.getElementById('gameBalance');
+    if (gameBalance) gameBalance.textContent = balance.toFixed(2);
+    const gameCurrentWin = document.getElementById('gameCurrentWin');
+    if (gameCurrentWin) gameCurrentWin.textContent = currentWin.toFixed(2);
+    
     if (balanceDisplay) balanceDisplay.textContent = balance.toFixed(2);
     if (altitudeDisplay) altitudeDisplay.textContent = altitude.toFixed(1);
     if (multiplierDisplay) multiplierDisplay.textContent = 'x' + currentMultiplier.toFixed(2);
