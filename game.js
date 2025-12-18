@@ -380,10 +380,20 @@ function initMenu() {
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             console.log('Tab clicked:', btn.dataset.tab);
+            const tab = btn.dataset.tab;
+            
+            if (tab === 'casino') {
+                // Directly start the plane game
+                document.getElementById('menuContainer').classList.add('hidden');
+                document.getElementById('gameContainer').classList.remove('hidden');
+                initGame();
+                return;
+            }
+            
+            // For other tabs, do normal switching
             tabBtns.forEach(b => b.classList.remove('active'));
             tabContents.forEach(c => c.classList.remove('active'));
             btn.classList.add('active');
-            const tab = btn.dataset.tab;
             const content = document.getElementById(tab);
             if (content) {
                 content.classList.add('active');
@@ -391,25 +401,16 @@ function initMenu() {
                 console.error('Tab content not found:', tab);
             }
             
-            // Additional actions based on tab
-            if (tab === 'casino') {
-                // Auto start the plane game
-                setTimeout(() => {
-                    document.getElementById('menuContainer').classList.add('hidden');
-                    document.getElementById('gameContainer').classList.remove('hidden');
-                    initGame();
-                }, 100);
-            } else if (tab === 'wheel') {
-                // Wheel is already shown, maybe auto spin or just show
-                // For now, just show
+            // Additional actions for other tabs if needed
+            if (tab === 'wheel') {
+                // Auto spin the wheel if possible
+                const today = new Date().toDateString();
+                const lastSpin = localStorage.getItem('lastSpin');
+                if (lastSpin !== today) {
+                    document.getElementById('spinWheelBtn').click();
+                }
             } else if (tab === 'profile') {
-                // Profile is shown, auth logic already handled
-            } else if (tab === 'games') {
-                // Games tab shown
-            } else if (tab === 'deposit') {
-                // Deposit tab shown
-            } else if (tab === 'settings') {
-                // Settings tab shown
+                // Profile is shown
             }
         });
     });
