@@ -16,6 +16,7 @@ function checkTelegramWebApp() {
     if (window.Telegram && window.Telegram.WebApp) {
         isTelegramWebApp = true;
         console.log('Running in Telegram Web App');
+        console.log('Telegram WebApp version:', window.Telegram.WebApp.version);
         // Настройка Web App
         window.Telegram.WebApp.expand(); // Развернуть на весь экран
         window.Telegram.WebApp.setHeaderColor('#0a0e27'); // Цвет заголовка
@@ -439,6 +440,7 @@ function initAuth() {
         
         // Автоматическая авторизация с Telegram данными
         const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+        console.log('Telegram user:', tgUser);
         if (tgUser) {
             const username = `tg_${tgUser.id}`;
             let user = findUserByUsername(username);
@@ -451,6 +453,8 @@ function initAuth() {
             setCurrentUserKey(username);
             balance = user.balance;
             updateUI();
+        } else {
+            console.log('No Telegram user data');
         }
         return; // Не инициализируем локальную авторизацию
     }
